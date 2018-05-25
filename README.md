@@ -18,3 +18,7 @@ $bundles = array(
             new ClickAndMortar\AkeneoUtilsBundle\AkeneoUtilsBundle(),
         );
 ```
+
+## Commands utils
+
+* `candm:akeneo-utils:clear-archives`: To remove old archives directories and avoid large disk usage.

@@ -46,8 +46,73 @@ class ClearArchivesCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $output->writeln('<error>Sicar : test !</error>');
+        // Check archives directory
+        $archivesPath = $input->getArgument('path');
+        if (!is_dir($archivesPath)) {
+            $output->writeln('<error>Invalid archives path.</error>');
+
+            return;
+        }
+
+        // Delete old directories
+        $limitDateAsString    = sprintf('-%s days', $input->getOption('days'));
+        $limitDate            = strtotime($limitDateAsString);
+        $archivesDeletedCount = 0;
+        $exportArchivesPaths  = $this->getSubDirectories($archivesPath);
+        foreach ($exportArchivesPaths as $exportArchivesPath) {
+            foreach ($this->getSubDirectories($exportArchivesPath) as $archivePath) {
+                $creationDate = filemtime($archivePath);
+                if ($creationDate < $limitDate) {
+                    $output->writeln(sprintf('<info>%s</info>', $archivePath));
+                    $this->recursiveDirectoryRemove($archivePath);
+                    $archivesDeletedCount++;
+                }
+            }
+        }
+
+        $output->writeln(sprintf('<info>%s archives directories removed.</info>', $archivesDeletedCount));
 
         return;
+    }
+
+    /**
+     * Get subdirectories by $path
+     *
+     * @param string $path
+     *
+     * @return array
+     */
+    protected function getSubDirectories($path)
+    {
+        $subDirectories = array();
+        if (is_dir($path)) {
+            $subDirectories = glob(sprintf('%s/*', $path, GLOB_ONLYDIR));
+        }
+
+        return $subDirectories;
+    }
+
+    /**
+     * Recursive remove for a directory
+     *
+     * @param string $path
+     *
+     * @return void
+     */
+    protected function recursiveDirectoryRemove($path)
+    {
+        if (is_dir($path)) {
+            $objects = scandir($path);
+            foreach ($objects as $object) {
+                if ($object != "." && $object != "..") {
+                    if (is_dir($path . "/" . $object)) {
+                        $this->recursiveDirectoryRemove($path . "/" . $object);
+                    } else {
+                        unlink($path . "/" . $object);
+                    }
+                }
+            }
+            rmdir($path);
+        }
     }
 }
