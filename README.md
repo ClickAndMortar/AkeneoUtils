@@ -22,3 +22,4 @@ $bundles = array(
 ## Commands utils
 
 * `candm:akeneo-utils:clear-archives`: To remove old archives directories and avoid large disk usage.
+* `candm:akeneo-utils:list-unused-options`: To list unused attribute options for given family and attribute code
