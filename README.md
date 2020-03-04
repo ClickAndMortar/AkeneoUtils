@@ -4,6 +4,13 @@ Akeneo Utils is a bundle to add some utils features to Akeneo project.
 
 Made by :heart: by C&M
 
+## Versions
+
+| **Bundle version**  | **Akeneo version** |
+| ------------- | ------------- |
+| v1.1.*  | v3.2.*  |
+| v1.0.*  | v2.1.*  |
+
 ## Installation
 
 Add package with composer:
