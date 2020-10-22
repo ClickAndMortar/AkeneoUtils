@@ -2,7 +2,7 @@
 
 namespace ClickAndMortar\AkeneoUtilsBundle\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -14,8 +14,10 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author  Simon CARRE <simon.carre@clickandmortar.fr>
  * @package ClickAndMortar\Bundle\AkeneoUtilsBundle\Command
  */
-class ClearArchivesCommand extends ContainerAwareCommand
+class ClearArchivesCommand extends Command
 {
+    protected static $defaultName = 'candm:akeneo-utils:clear-archives';
+
     /**
      * Days of archives to keep
      *
@@ -30,8 +32,7 @@ class ClearArchivesCommand extends ContainerAwareCommand
      */
     protected function configure()
     {
-        $this->setName('candm:akeneo-utils:clear-archives')
-             ->setDescription('Clear archives directories to avoid large disk usage')
+        $this->setDescription('Clear archives directories to avoid large disk usage')
              ->addArgument('path', InputArgument::REQUIRED, 'Archives directory path')
              ->addOption('days', 'd', InputOption::VALUE_OPTIONAL, 'Days of archives to keep', self::DEFAULT_DAYS_TO_KEEP);
     }

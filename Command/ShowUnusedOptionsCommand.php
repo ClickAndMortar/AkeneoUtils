@@ -8,14 +8,14 @@ use Doctrine\ORM\EntityManager;
 use Pim\Bundle\CatalogBundle\Doctrine\ORM\Repository\AttributeOptionRepository;
 use Pim\Bundle\CatalogBundle\Doctrine\ORM\Repository\AttributeRepository;
 use Pim\Bundle\CatalogBundle\Doctrine\ORM\Repository\FamilyRepository;
-use Pim\Bundle\CatalogBundle\Elasticsearch\ProductAndProductModelQueryBuilderFactory;
 use Pim\Bundle\CatalogBundle\Elasticsearch\ProductQueryBuilderFactory;
+use Akeneo\Pim\Enrichment\Bundle\Elasticsearch\ProductAndProductModelQueryBuilderFactory;
 use Pim\Bundle\CatalogBundle\Entity\Attribute;
 use Pim\Bundle\CatalogBundle\Entity\Family;
 use Pim\Component\Catalog\AttributeTypes;
 use Pim\Component\Catalog\Model\AttributeOptionInterface;
 use Pim\Component\Catalog\Model\FamilyVariant;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -26,8 +26,15 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author  Simon CARRE <simon.carre@clickandmortar.fr>
  * @package ClickAndMortar\AkeneoUtilsBundle\Command
  */
-class ShowUnusedOptionsCommand extends ContainerAwareCommand
+class ShowUnusedOptionsCommand extends Command
 {
+    protected static $defaultName = 'candm:akeneo-utils:list-unused-options';
+
+    /**
+     * @var EntityManager
+     */
+    protected $entityManager;
+
     /**
      * @var OutputInterface
      */
@@ -47,6 +54,19 @@ class ShowUnusedOptionsCommand extends ContainerAwareCommand
      * @var ProductAndProductModelQueryBuilderFactory
      */
     protected $productAndProductModelQueryBuilderFactory;
+
+    /**
+     * ShowUnusedOptionsCommand constructor.
+     *
+     * @param EntityManager                             $entityManager
+     * @param ProductAndProductModelQueryBuilderFactory $productAndProductModelQueryBuilderFactory
+     */
+    public function __construct(EntityManager $entityManager, ProductAndProductModelQueryBuilderFactory $productAndProductModelQueryBuilderFactory)
+    {
+        parent::__construct(null);
+        $this->entityManager                             = $entityManager;
+        $this->productAndProductModelQueryBuilderFactory = $productAndProductModelQueryBuilderFactory;
+    }
 
     /**
      * Configure command
@@ -143,12 +163,8 @@ class ShowUnusedOptionsCommand extends ContainerAwareCommand
      */
     protected function loadRepositories()
     {
-        $container = $this->getContainer();
-        /** @var EntityManager $entityManager */
-        $entityManager                                   = $container->get('doctrine.orm.entity_manager');
-        $this->familyRepository                          = $entityManager->getRepository('PimCatalogBundle:Family');
-        $this->attributeOptionRepository                 = $entityManager->getRepository('PimCatalogBundle:AttributeOption');
-        $this->productAndProductModelQueryBuilderFactory = $container->get('pim_catalog.query.product_and_product_model_query_builder_factory');
+        $this->familyRepository                          = $this->entityManager->getRepository('PimCatalogBundle:Family');
+        $this->attributeOptionRepository                 = $this->entityManager->getRepository('PimCatalogBundle:AttributeOption');
     }
 
     /**
