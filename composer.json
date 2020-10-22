@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "akeneo/pim-community-dev": "^3.2"
+        "akeneo/pim-community-dev": "^4.0"
     },
     "repositories": [
         {
