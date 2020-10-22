@@ -1,0 +1,13 @@
+parameters:
+    candm_utils.command.simple_installer_assets.class: 'ClickAndMortar\AkeneoUtilsBundle\Command\SimpleInstallerAssetsCommand'
+
+services:
+    candm_utils.command.simple_installer_assets:
+        class: '%candm_utils.command.simple_installer_assets.class%'
+        arguments:
+        - '@filesystem'
+        - '@event_dispatcher'
+        - '%pim_localization.provider.ui_locale.locale_codes%'
+        - '%kernel.root_dir%'
+        tags:
+        - { name: 'console.command' }

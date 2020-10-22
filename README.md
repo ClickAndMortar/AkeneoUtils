@@ -8,6 +8,7 @@ Made by :heart: by C&M
 
 | **Bundle version**  | **Akeneo version** |
 | ------------- | ------------- |
+| v1.2.*  | v4.0.*  |
 | v1.1.*  | v3.2.*  |
 | v1.0.*  | v2.1.*  |
 
@@ -15,18 +16,19 @@ Made by :heart: by C&M
 
 Add package with composer:
 ```bash
-composer require clickandmortar/akeneo-utils-bundle "^1.0"
+composer require clickandmortar/akeneo-utils-bundle "<version-wanted>.*"
 ```
 
-Add bundle in your **`app/AppKernel.php`** file:
+Add bundle in your **`config/bundles.php`** file:
 ```php
-$bundles = array(
-            ...
-            new ClickAndMortar\AkeneoUtilsBundle\AkeneoUtilsBundle(),
-        );
+return [
+    ClickAndMortar\AkeneoUtilsBundle\ClickAndMortarAkeneoUtilsBundle::class => ['all' => true]
+    ...
+];
 ```
 
 ## Commands utils
 
 * `candm:akeneo-utils:clear-archives`: To remove old archives directories and avoid large disk usage.
 * `candm:akeneo-utils:list-unused-options`: To list unused attribute options for given family and attribute code
+* `candm:installer:assets` : To install assets without Oro translation dump
