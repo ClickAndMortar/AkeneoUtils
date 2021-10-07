@@ -32,3 +32,4 @@ return [
 * `candm:akeneo-utils:clear-archives`: To remove old archives directories and avoid large disk usage.
 * `candm:akeneo-utils:list-unused-options`: To list unused attribute options for given family and attribute code
 * `candm:installer:assets` : To install assets without Oro translation dump
+* `candm:akeneo-utils:clear-models-without-children` : To clear empty sub models and models
