@@ -73,7 +73,7 @@ class ClearArchivesCommand extends Command
 
         $output->writeln(sprintf('<info>%s archives directories removed.</info>', $archivesDeletedCount));
 
-        return;
+        return 0;
     }
 
     /**

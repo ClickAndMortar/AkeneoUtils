@@ -103,5 +103,7 @@ class ClearModelsWithoutChildrenCommand extends Command
             $this->entityManager->remove($model);
         }
         $this->entityManager->flush();
+        
+        return 0;
     }
 }

@@ -5,16 +5,16 @@ namespace ClickAndMortar\AkeneoUtilsBundle\Command;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityManager;
-use Pim\Bundle\CatalogBundle\Doctrine\ORM\Repository\AttributeOptionRepository;
-use Pim\Bundle\CatalogBundle\Doctrine\ORM\Repository\AttributeRepository;
-use Pim\Bundle\CatalogBundle\Doctrine\ORM\Repository\FamilyRepository;
-use Pim\Bundle\CatalogBundle\Elasticsearch\ProductQueryBuilderFactory;
+use Akeneo\Pim\Structure\Bundle\Doctrine\ORM\Repository\AttributeOptionRepository;
+use Akeneo\Pim\Structure\Bundle\Doctrine\ORM\Repository\AttributeRepository;
+use Akeneo\Pim\Structure\Bundle\Doctrine\ORM\Repository\FamilyRepository;
+use Akeneo\Pim\Enrichment\Bundle\Elasticsearch\ProductQueryBuilderFactory;
 use Akeneo\Pim\Enrichment\Bundle\Elasticsearch\ProductAndProductModelQueryBuilderFactory;
-use Pim\Bundle\CatalogBundle\Entity\Attribute;
-use Pim\Bundle\CatalogBundle\Entity\Family;
-use Pim\Component\Catalog\AttributeTypes;
-use Pim\Component\Catalog\Model\AttributeOptionInterface;
-use Pim\Component\Catalog\Model\FamilyVariant;
+use Akeneo\Pim\Structure\Component\Model\Attribute;
+use Akeneo\Pim\Structure\Component\Model\Family;
+use Akeneo\Pim\Structure\Component\AttributeTypes;
+use Akeneo\Pim\Structure\Component\Model\AttributeOptionInterface;
+use Akeneo\Pim\Structure\Component\Model\FamilyVariant;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -101,7 +101,7 @@ class ShowUnusedOptionsCommand extends Command
         if ($family === null) {
             $this->output->writeln('<error>Bad family code.</error>');
 
-            return;
+            return 1;
         }
 
         // Get attribute code to filter
@@ -153,7 +153,7 @@ class ShowUnusedOptionsCommand extends Command
         // Print result
         $this->displayUnusedOptions($unusedOptionsPerAttribute);
 
-        return;
+        return 0;
     }
 
     /**
@@ -163,8 +163,8 @@ class ShowUnusedOptionsCommand extends Command
      */
     protected function loadRepositories()
     {
-        $this->familyRepository                          = $this->entityManager->getRepository('PimCatalogBundle:Family');
-        $this->attributeOptionRepository                 = $this->entityManager->getRepository('PimCatalogBundle:AttributeOption');
+        $this->familyRepository                          = $this->entityManager->getRepository('Akeneo\Pim\Structure\Component\Model\Family');
+        $this->attributeOptionRepository                 = $this->entityManager->getRepository('Akeneo\Pim\Structure\Component\Model\AttributeOption');
     }
 
     /**

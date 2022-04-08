@@ -1,7 +1,6 @@
 parameters:
     candm_utils.command.clear_archives.class: 'ClickAndMortar\AkeneoUtilsBundle\Command\ClearArchivesCommand'
     candm_utils.command.show_unused_options.class: 'ClickAndMortar\AkeneoUtilsBundle\Command\ShowUnusedOptionsCommand'
-    candm_utils.command.simple_installer_assets.class: 'ClickAndMortar\AkeneoUtilsBundle\Command\SimpleInstallerAssetsCommand'
     candm_utils.command.clear_models_without_children.class: 'ClickAndMortar\AkeneoUtilsBundle\Command\ClearModelsWithoutChildrenCommand'
 
 services:
@@ -15,16 +14,6 @@ services:
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@pim_catalog.query.product_and_product_model_query_builder_factory'
-        tags:
-            - { name: 'console.command' }
-
-    candm_utils.command.simple_installer_assets:
-        class: '%candm_utils.command.simple_installer_assets.class%'
-        arguments:
-            - '@filesystem'
-            - '@event_dispatcher'
-            - '%pim_localization.provider.ui_locale.locale_codes%'
-            - '%kernel.root_dir%'
         tags:
             - { name: 'console.command' }
 
