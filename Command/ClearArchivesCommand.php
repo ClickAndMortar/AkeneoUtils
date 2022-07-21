@@ -43,7 +43,7 @@ class ClearArchivesCommand extends Command
      * @param InputInterface  $input
      * @param OutputInterface $output
      *
-     * @return int|null|void
+     * @return int|null
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -52,7 +52,7 @@ class ClearArchivesCommand extends Command
         if (!is_dir($archivesPath)) {
             $output->writeln('<error>Invalid archives path.</error>');
 
-            return;
+            return 1;
         }
 
         // Delete old directories
