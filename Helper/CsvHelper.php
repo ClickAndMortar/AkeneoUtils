@@ -6,6 +6,8 @@ class CsvHelper
 {
     const SEPARATOR = ';';
 
+    const HEADER_NAME_SEPARATOR = '/';
+
     /**
      * Generate CSV file from $jsonData
      *
@@ -46,7 +48,7 @@ class CsvHelper
         $headers = [];
         foreach ($array as $key => $value) {
             if (is_array($value)) {
-                $headers = array_merge($headers, $this->getHeadersFromArray($value, $prefix . $key . '_'));
+                $headers = array_merge($headers, $this->getHeadersFromArray($value, $prefix . $key . self::HEADER_NAME_SEPARATOR));
             } else {
                 $headers[] = $prefix . $key;
             }
@@ -67,7 +69,7 @@ class CsvHelper
         foreach ($array as $item) {
             $row = [];
             foreach ($headers as $header) {
-                $keys  = explode('_', $header);
+                $keys  = explode(self::HEADER_NAME_SEPARATOR, $header);
                 $value = $item;
                 foreach ($keys as $key) {
                     if (isset($value[$key])) {
