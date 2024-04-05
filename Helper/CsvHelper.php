@@ -4,6 +4,8 @@ namespace ClickAndMortar\AkeneoUtilsBundle\Helper;
 
 class CsvHelper
 {
+    const SEPARATOR = ';';
+
     /**
      * Generate CSV file from $jsonData
      *
@@ -24,9 +26,9 @@ class CsvHelper
         }
 
         $headers = $this->getHeadersFromArray($data[0]);
-        fputcsv($file, $headers);
+        fputcsv($file, $headers, self::SEPARATOR);
         foreach ($this->getRowsFromArray($data, $headers) as $row) {
-            fputcsv($file, $row);
+            fputcsv($file, $row, self::SEPARATOR);
         }
         fclose($file);
 
