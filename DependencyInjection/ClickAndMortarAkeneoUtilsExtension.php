@@ -23,5 +23,6 @@ class ClickAndMortarAkeneoUtilsExtension extends Extension
     {
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('commands.yml');
+        $loader->load('helpers.yml');
     }
 }

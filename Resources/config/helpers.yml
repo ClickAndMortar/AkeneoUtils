@@ -1,0 +1,6 @@
+parameters:
+    candm_utils.helper.csv.class: ClickAndMortar\AkeneoUtilsBundle\Helper\CsvHelper
+
+services:
+    candm_utils.helper.csv:
+        class: '%candm_utils.helper.csv.class%'
