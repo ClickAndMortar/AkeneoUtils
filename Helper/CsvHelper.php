@@ -27,7 +27,7 @@ class CsvHelper
             return false;
         }
 
-        $headers = $this->getHeadersFromArray($data[0]);
+        $headers = $this->getHeadersFromArray($data);
         fputcsv($file, $headers, self::SEPARATOR);
         foreach ($this->getRowsFromArray($data, $headers) as $row) {
             fputcsv($file, $row, self::SEPARATOR);
@@ -38,19 +38,35 @@ class CsvHelper
     }
 
     /**
-     * @param array $array
+     * @param array  $array
      * @param string $prefix
      *
      * @return array
      */
-    protected function getHeadersFromArray($array, $prefix = '')
+    protected function getHeadersFromArray($array)
     {
         $headers = [];
-        foreach ($array as $key => $value) {
+        foreach ($array as $item) {
+            $headersToAdd = array_diff($this->getHeadersFromItem($item), $headers);
+            $headers      = array_merge($headers, $headersToAdd);
+        }
+        sort($headers);
+
+        return $headers;
+    }
+
+    protected function getHeadersFromItem($item, $prefix = '')
+    {
+        $headers = [];
+        foreach ($item as $key => $value) {
             if (is_array($value)) {
-                $headers = array_merge($headers, $this->getHeadersFromArray($value, $prefix . $key . self::HEADER_NAME_SEPARATOR));
+                $headersToAdd = array_diff($this->getHeadersFromItem($value, $prefix . $key . self::HEADER_NAME_SEPARATOR), $headers);
+                $headers      = array_merge($headers, $headersToAdd);
             } else {
-                $headers[] = $prefix . $key;
+                $newHeader = $prefix . $key;
+                if (!in_array($newHeader, $headers)) {
+                    $headers[] = $prefix . $key;
+                }
             }
         }
 
