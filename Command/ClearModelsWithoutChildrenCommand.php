@@ -20,6 +20,13 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ClearModelsWithoutChildrenCommand extends Command
 {
+    /**
+     * Chunk size for flush
+     *
+     * @var int
+     */
+    const CHUNK_SIZE = 50;
+
     protected static $defaultName = 'candm:akeneo-utils:clear-models-without-children';
 
     /**
@@ -68,10 +75,11 @@ class ClearModelsWithoutChildrenCommand extends Command
     {
         $output->writeln('<info>Process empty sub models...</info>');
         /** @var ProductModelInterface[] $subModels */
-        $subModels = $this->productModelQueryBuilderFactory->create()
-                                                           ->addFilter('entity_type', Operators::EQUALS, ProductModelInterface::class)
-                                                           ->addFilter('parent', Operators::IS_NOT_EMPTY, null)
-                                                           ->execute();
+        $subModels  = $this->productModelQueryBuilderFactory->create()
+                                                            ->addFilter('entity_type', Operators::EQUALS, ProductModelInterface::class)
+                                                            ->addFilter('parent', Operators::IS_NOT_EMPTY, null)
+                                                            ->execute();
+        $chunkIndex = 0;
         foreach ($subModels as $subModel) {
             $products = $subModel->getProducts();
             if (count($products) > 0) {
@@ -82,15 +90,21 @@ class ClearModelsWithoutChildrenCommand extends Command
             $output->writeln(sprintf('<info>%s</info>', $subModel->getCode()));
             $subModel = $this->entityManager->merge($subModel);
             $this->entityManager->remove($subModel);
+            $chunkIndex++;
+            if ($chunkIndex >= self::CHUNK_SIZE) {
+                $this->entityManager->flush();
+                $chunkIndex = 0;
+            }
         }
         $this->entityManager->flush();
 
         $output->writeln('<info>Process empty models...</info>');
         /** @var ProductModelInterface[] $models */
-        $models = $this->productModelQueryBuilderFactory->create()
-                                                        ->addFilter('entity_type', Operators::EQUALS, ProductModelInterface::class)
-                                                        ->addFilter('parent', Operators::IS_EMPTY, null)
-                                                        ->execute();
+        $models     = $this->productModelQueryBuilderFactory->create()
+                                                            ->addFilter('entity_type', Operators::EQUALS, ProductModelInterface::class)
+                                                            ->addFilter('parent', Operators::IS_EMPTY, null)
+                                                            ->execute();
+        $chunkIndex = 0;
         foreach ($models as $model) {
             $subModels = $model->getProductModels();
             if (count($subModels) > 0) {
@@ -101,9 +115,14 @@ class ClearModelsWithoutChildrenCommand extends Command
             $output->writeln(sprintf('<info>%s</info>', $model->getCode()));
             $model = $this->entityManager->merge($model);
             $this->entityManager->remove($model);
+            $chunkIndex++;
+            if ($chunkIndex >= self::CHUNK_SIZE) {
+                $this->entityManager->flush();
+                $chunkIndex = 0;
+            }
         }
         $this->entityManager->flush();
-        
+
         return 0;
     }
 }
