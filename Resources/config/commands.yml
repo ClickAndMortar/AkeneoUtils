@@ -21,6 +21,7 @@ services:
         class: '%candm_utils.command.clear_models_without_children.class%'
         arguments:
             - '@doctrine.orm.entity_manager'
-            - '@pim_catalog.query.product_and_product_model_query_builder_factory'
+            - '@database_connection'
+            - '@pim_catalog.repository.product_model_without_permission'
         tags:
             - { name: 'console.command' }

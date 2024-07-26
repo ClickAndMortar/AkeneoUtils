@@ -2,9 +2,10 @@
 
 namespace ClickAndMortar\AkeneoUtilsBundle\Command;
 
-use Akeneo\Pim\Enrichment\Bundle\Elasticsearch\ProductAndProductModelQueryBuilderFactory;
+use Akeneo\Pim\Enrichment\Bundle\Doctrine\ORM\Repository\ProductModelRepository;
 use Akeneo\Pim\Enrichment\Component\Product\Model\ProductModelInterface;
 use Akeneo\Pim\Enrichment\Component\Product\Query\Filter\Operators;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -35,22 +36,34 @@ class ClearModelsWithoutChildrenCommand extends Command
     protected $entityManager;
 
     /**
-     * @var ProductAndProductModelQueryBuilderFactory
+     * @var Connection
      */
-    protected $productModelQueryBuilderFactory;
+    protected $sqlConnection;
 
     /**
-     * @param EntityManager                             $entityManager
-     * @param ProductAndProductModelQueryBuilderFactory $productModelQueryBuilderFactory
+     * @var ProductModelRepository
+     */
+    protected $productModelRepository;
+
+    /**
+     * @var OutputInterface
+     */
+    protected $output;
+
+    /**
+     * @param EntityManager $entityManager
+     * @param Connection    $sqlConnection
      */
     public function __construct(
         EntityManager $entityManager,
-        ProductAndProductModelQueryBuilderFactory $productModelQueryBuilderFactory
+        Connection $sqlConnection,
+        ProductModelRepository $productModelRepository
     )
     {
         parent::__construct(null);
-        $this->entityManager                   = $entityManager;
-        $this->productModelQueryBuilderFactory = $productModelQueryBuilderFactory;
+        $this->entityManager          = $entityManager;
+        $this->sqlConnection          = $sqlConnection;
+        $this->productModelRepository = $productModelRepository;
     }
 
     /**
@@ -73,46 +86,45 @@ class ClearModelsWithoutChildrenCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $output->writeln('<info>Process empty sub models...</info>');
-        /** @var ProductModelInterface[] $subModels */
-        $subModels  = $this->productModelQueryBuilderFactory->create()
-                                                            ->addFilter('entity_type', Operators::EQUALS, ProductModelInterface::class)
-                                                            ->addFilter('parent', Operators::IS_NOT_EMPTY, null)
-                                                            ->execute();
-        $chunkIndex = 0;
-        foreach ($subModels as $subModel) {
-            $products = $subModel->getProducts();
-            if (count($products) > 0) {
-                continue;
-            }
+        $this->output = $output;
+        $this->output->writeln('<info>Process empty sub models...</info>');
+        $sqlQuery             = <<<SQL
+        SELECT pm.code
+        FROM pim_catalog_product_model AS pm
+        LEFT JOIN pim_catalog_product AS p ON p.product_model_id = pm.id
+        WHERE pm.parent_id IS NOT NULL AND p.id IS NULL;
+SQL;
+        $subModelsIdentifiers = $this->sqlConnection->executeQuery($sqlQuery)->fetchAllAssociativeIndexed();
+        $subModelsIdentifiers = array_keys($subModelsIdentifiers);
+        $this->deleteModelsByIdentifiers($subModelsIdentifiers);
 
-            // Delete sub model
-            $output->writeln(sprintf('<info>%s</info>', $subModel->getCode()));
-            $subModel = $this->entityManager->merge($subModel);
-            $this->entityManager->remove($subModel);
-            $chunkIndex++;
-            if ($chunkIndex >= self::CHUNK_SIZE) {
-                $this->entityManager->flush();
-                $chunkIndex = 0;
-            }
-        }
-        $this->entityManager->flush();
+        $this->output->writeln('<info>Process empty models...</info>');
+        $sqlQuery             = <<<SQL
+        SELECT rm.code
+        FROM pim_catalog_product_model AS rm
+        LEFT JOIN pim_catalog_product_model AS sb ON sb.parent_id = rm.id
+        WHERE rm.parent_id IS NULL AND sb.id IS NULL;
+SQL;
+        $modelsIdentifiers = $this->sqlConnection->executeQuery($sqlQuery)->fetchAllAssociativeIndexed();
+        $modelsIdentifiers = array_keys($modelsIdentifiers);
+        $this->deleteModelsByIdentifiers($modelsIdentifiers);
 
-        $output->writeln('<info>Process empty models...</info>');
-        /** @var ProductModelInterface[] $models */
-        $models     = $this->productModelQueryBuilderFactory->create()
-                                                            ->addFilter('entity_type', Operators::EQUALS, ProductModelInterface::class)
-                                                            ->addFilter('parent', Operators::IS_EMPTY, null)
-                                                            ->execute();
+        return 0;
+    }
+
+    /**
+     * Delete models by $identifiers
+     *
+     * @param array $identifiers
+     *
+     * @return void
+     */
+    protected function deleteModelsByIdentifiers($identifiers)
+    {
         $chunkIndex = 0;
+        $models     = $this->productModelRepository->findByIdentifiers($identifiers);
         foreach ($models as $model) {
-            $subModels = $model->getProductModels();
-            if (count($subModels) > 0) {
-                continue;
-            }
-
-            // Delete model
-            $output->writeln(sprintf('<info>%s</info>', $model->getCode()));
+            $this->output->writeln(sprintf('<info>%s</info>', $model->getCode()));
             $model = $this->entityManager->merge($model);
             $this->entityManager->remove($model);
             $chunkIndex++;
@@ -122,7 +134,5 @@ class ClearModelsWithoutChildrenCommand extends Command
             }
         }
         $this->entityManager->flush();
-
-        return 0;
     }
 }
