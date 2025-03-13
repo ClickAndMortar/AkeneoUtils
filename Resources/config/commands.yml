@@ -22,6 +22,6 @@ services:
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@database_connection'
-            - '@pim_catalog.repository.product_model_without_permission'
+            - '@pim_catalog.repository.product_model'
         tags:
             - { name: 'console.command' }
