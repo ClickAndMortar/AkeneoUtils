@@ -38,6 +38,33 @@ class CsvHelper
     }
 
     /**
+     * Generate CSV file from $xml
+     *
+     * @param string            $filePath
+     * @param \SimpleXMLElement $xml
+     * @param string            $nodeName
+     *
+     * @return bool
+     */
+    public function generateCsvFromXml($filePath, $xml, $nodeName = 'product')
+    {
+        $file = fopen($filePath, 'w+');
+        if (!$file) {
+            return false;
+        }
+
+        // Get headers from first element
+        $headers = $this->getHeadersFromXml($xml, $nodeName);
+        fputcsv($file, $headers, self::SEPARATOR);
+        foreach ($this->getRowsFromXml($xml, $headers, $nodeName) as $row) {
+            fputcsv($file, $row, self::SEPARATOR);
+        }
+        fclose($file);
+
+        return true;
+    }
+
+    /**
      * @param array  $array
      * @param string $prefix
      *
@@ -53,6 +80,23 @@ class CsvHelper
         sort($headers);
 
         return $headers;
+    }
+
+    /**
+     * @param \SimpleXMLElement $xml
+     * @param string $nodeName
+     *
+     * @return array
+     */
+    protected function getHeadersFromXml($xml, $nodeName)
+    {
+        // Get headers from first element
+        $firstElement = $xml->xpath($nodeName)[0] ?? null;
+        if (!$firstElement) {
+            return [];
+        }
+
+        return array_keys((array) $firstElement);
     }
 
     protected function getHeadersFromItem($item, $prefix = '')
@@ -96,6 +140,27 @@ class CsvHelper
                     }
                 }
                 $row[] = $value;
+            }
+            $rows[] = $row;
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @param \SimpleXMLElement $xml
+     * @param array $headers
+     * @param string $nodeName
+     *
+     * @return array
+     */
+    protected function getRowsFromXml($xml, $headers, $nodeName)
+    {
+        $rows = [];
+        foreach ($xml->xpath($nodeName) as $item) {
+            $row = [];
+            foreach ($headers as $header) {
+                $row[] = (string) $item->$header;
             }
             $rows[] = $row;
         }
