@@ -160,7 +160,8 @@ class CsvHelper
         foreach ($xml->xpath($nodeName) as $item) {
             $row = [];
             foreach ($headers as $header) {
-                $row[] = (string) $item->$header;
+                $valueAsString = (string) $item->$header;
+                $row[] = str_replace(["\r\n", "\r", "\n"], " ", $valueAsString);
             }
             $rows[] = $row;
         }
